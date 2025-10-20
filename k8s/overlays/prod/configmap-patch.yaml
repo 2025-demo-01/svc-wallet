@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: wallet-config
+  namespace: wallet
+data:
+  QUEUE_BACKEND: "kafka"
+  KAFKA_TOPIC: "wallet-withdraw"
+  MOCK_QUEUE_TIME_S: "0.2"
