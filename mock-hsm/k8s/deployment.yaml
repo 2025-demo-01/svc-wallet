@@ -1,0 +1,29 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: hsm-mock
+  namespace: wallet
+spec:
+  replicas: 1
+  selector:
+    matchLabels: { app: hsm-mock }
+  template:
+    metadata:
+      labels: { app: hsm-mock }
+    spec:
+      containers:
+        - name: hsm-mock
+          image: registry.upx.exchange/exchange/hsm-mock:v0.1.0
+          ports: [{containerPort: 9000, name: http}]
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: hsm-mock
+  namespace: wallet
+spec:
+  selector: { app: hsm-mock }
+  ports:
+    - name: http
+      port: 9000
+      targetPort: 9000
