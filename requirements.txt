@@ -1,2 +1,5 @@
 Flask==2.2.5
 gunicorn==20.1.0
+redis==5.0.1
+requests==2.32.0
+confluent-kafka==2.5.0
