@@ -1,1 +1,63 @@
-
+# svc-wallet/k8s/base/deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: wallet-service
+  labels:
+    app: wallet
+    service: wallet
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: wallet
+  template:
+    metadata:
+      labels:
+        app: wallet
+        service: wallet
+        env: prod
+        owner: wallet
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "8081"
+        prometheus.io/path: /metrics
+    spec:
+      containers:
+        - name: wallet
+          image: registry.upx.exchange/exchange/wallet:v0.7.1
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8081
+              name: http
+          env:
+            - name: PORT
+              value: "8081"
+            - name: HOT_WALLET_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: wallet-secret
+                  key: HOT_WALLET_PASSWORD
+            - name: HSM_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: wallet-secret
+                  key: HSM_API_KEY
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: wallet-secret
+                  key: DB_PASSWORD
+          resources:
+            requests:
+              cpu: "500m"
+              memory: "512Mi"
+            limits:
+              cpu: "1"
+              memory: "1Gi"
+          securityContext:
+            runAsNonRoot: true
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+      imagePullSecrets:
+        - name: registry-credentials
