@@ -5,8 +5,12 @@ resources:
   - ../../base/deployment.yaml
   - ../../base/service.yaml
   - ../../base/networkpolicy.yaml
+  - ../../base/secret.enc.yaml
+  - ../../base/configmap.yaml
 commonLabels:
   env: dev
 images:
   - name: registry.upx.exchange/exchange/wallet
     newTag: v0.7.1
+patchesStrategicMerge:
+  - configmap-patch.yaml
