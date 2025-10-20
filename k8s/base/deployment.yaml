@@ -1,8 +1,8 @@
-# svc-wallet/k8s/base/deployment.yaml
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: wallet-service
+  namespace: wallet
   labels:
     app: wallet
     service: wallet
@@ -33,6 +33,8 @@ spec:
           env:
             - name: PORT
               value: "8081"
+            - name: HSM_ENDPOINT
+              value: "http://hsm-mock.wallet.svc.cluster.local:9000"
             - name: HOT_WALLET_PASSWORD
               valueFrom:
                 secretKeyRef:
@@ -48,6 +50,19 @@ spec:
                 secretKeyRef:
                   name: wallet-secret
                   key: DB_PASSWORD
+            - name: KAFKA_SASL_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: wallet-secret
+                  key: HSM_API_KEY
+            - name: KAFKA_SASL_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: wallet-secret
+                  key: HOT_WALLET_PASSWORD
+          envFrom:
+            - configMapRef:
+                name: wallet-config
           resources:
             requests:
               cpu: "500m"
