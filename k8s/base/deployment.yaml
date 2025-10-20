@@ -59,7 +59,7 @@ spec:
               valueFrom:
                 secretKeyRef:
                   name: wallet-secret
-                  key: HOT_WALLET_PASSWORD
+                  key: HOT_WALLET_PASSWORD      
           envFrom:
             - configMapRef:
                 name: wallet-config
