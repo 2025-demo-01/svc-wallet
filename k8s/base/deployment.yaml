@@ -11,6 +11,11 @@ spec:
   selector:
     matchLabels:
       app: wallet
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 0
+      maxSurge: 1
   template:
     metadata:
       labels:
@@ -28,46 +33,13 @@ spec:
           image: registry.upx.exchange/exchange/wallet:v0.7.1
           imagePullPolicy: IfNotPresent
           ports:
-            - containerPort: 8081
-              name: http
+            - name: http
+              containerPort: 8081
           env:
-           - name: QUEUE_BACKEND
-            value: "kafka"
-           - name: KAFKA_BOOTSTRAP
-            value: "kafka.data-platform.svc.cluster.local:9092"
-           - name: KAFKA_TOPIC
-            value: "wallet-withdraw"
-            - name: KAFKA_SASL_USERNAME
-              valueFrom:
-                secretKeyRef:
-                  name: wallet-secret
-                  key: HSM_API_KEY
-            - name: KAFKA_SASL_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: wallet-secret
-                  key: HOT_WALLET_PASSWORD
-            - name: KAFKA_SASL_MECHANISMS
-              value: "PLAIN"
-            - name: KAFKA_SECURITY_PROTOCOL
-              value: "SASL_PLAINTEXT" 
             - name: PORT
               value: "8081"
             - name: HSM_ENDPOINT
               value: "http://hsm-mock.wallet.svc.cluster.local:9000"
-            - name: QUEUE_BACKEND
-              value: "redis"
-            - name: REDIS_HOST
-              value: "redis.wallet.svc.cluster.local"
-            - name: REDIS_PORT
-              value: "6379"
-            - name: REDIS_PASSWORD
-             valueFrom:
-               secretKeyRef:
-                 name: wallet-secret
-                 key: HOT_WALLET_PASSWORD
-            - name: REDIS_QUEUE_KEY
-              value: "wallet:withdraw:queue"
             - name: HOT_WALLET_PASSWORD
               valueFrom:
                 secretKeyRef:
@@ -92,7 +64,7 @@ spec:
               valueFrom:
                 secretKeyRef:
                   name: wallet-secret
-                  key: HOT_WALLET_PASSWORD      
+                  key: HOT_WALLET_PASSWORD
           envFrom:
             - configMapRef:
                 name: wallet-config
@@ -107,5 +79,21 @@ spec:
             runAsNonRoot: true
             allowPrivilegeEscalation: false
             readOnlyRootFilesystem: true
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: 8081
+            initialDelaySeconds: 3
+            periodSeconds: 5
+            timeoutSeconds: 2
+            failureThreshold: 6
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: 8081
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            timeoutSeconds: 2
+            failureThreshold: 3
       imagePullSecrets:
         - name: registry-credentials
