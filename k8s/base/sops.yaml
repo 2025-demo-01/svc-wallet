@@ -1,1 +1,5 @@
-
+# sops 설정 예시 (로컬/CI에서 sops 사용 시 참조)
+creation_rules:
+  - encrypted_regex: '^(HSM_API_KEY|HOT_WALLET_PASSWORD|DB_PASSWORD)$'
+    # age: [ 'age1...' ]   # 실제 환경에서는 age 키 또는 PGP 키를 여기에 넣는다
+    # pgp: ['...']
