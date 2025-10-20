@@ -35,6 +35,19 @@ spec:
               value: "8081"
             - name: HSM_ENDPOINT
               value: "http://hsm-mock.wallet.svc.cluster.local:9000"
+            - name: QUEUE_BACKEND
+              value: "redis"
+            - name: REDIS_HOST
+              value: "redis.wallet.svc.cluster.local"
+            - name: REDIS_PORT
+              value: "6379"
+            - name: REDIS_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: wallet-secret
+                  key: HOT_WALLET_PASSWORD
+            - name: REDIS_QUEUE_KEY
+              value: "wallet:withdraw:queue"
             - name: HOT_WALLET_PASSWORD
               valueFrom:
                 secretKeyRef:
