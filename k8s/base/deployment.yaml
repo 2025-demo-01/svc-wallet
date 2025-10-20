@@ -31,6 +31,26 @@ spec:
             - containerPort: 8081
               name: http
           env:
+           - name: QUEUE_BACKEND
+            value: "kafka"
+           - name: KAFKA_BOOTSTRAP
+            value: "kafka.data-platform.svc.cluster.local:9092"
+           - name: KAFKA_TOPIC
+            value: "wallet-withdraw"
+            - name: KAFKA_SASL_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: wallet-secret
+                  key: HSM_API_KEY
+            - name: KAFKA_SASL_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: wallet-secret
+                  key: HOT_WALLET_PASSWORD
+            - name: KAFKA_SASL_MECHANISMS
+              value: "PLAIN"
+            - name: KAFKA_SECURITY_PROTOCOL
+              value: "SASL_PLAINTEXT" 
             - name: PORT
               value: "8081"
             - name: HSM_ENDPOINT
@@ -42,10 +62,10 @@ spec:
             - name: REDIS_PORT
               value: "6379"
             - name: REDIS_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: wallet-secret
-                  key: HOT_WALLET_PASSWORD
+             valueFrom:
+               secretKeyRef:
+                 name: wallet-secret
+                 key: HOT_WALLET_PASSWORD
             - name: REDIS_QUEUE_KEY
               value: "wallet:withdraw:queue"
             - name: HOT_WALLET_PASSWORD
