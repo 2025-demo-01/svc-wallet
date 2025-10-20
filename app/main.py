@@ -3,6 +3,8 @@ import time
 import uuid
 import os
 import threading
+import json
+from hsm_client import sign_payload
 
 app = Flask(__name__)
 
@@ -28,12 +30,14 @@ def withdraw():
             return jsonify({"status": "duplicate", "idempotency_key": ik}), 200
         idempotency.add(ik)
         wid = str(uuid.uuid4())
+        sign_result = sign_payload(json.dumps({"wid":  
         withdraw_queue.append({
             "withdraw_id": wid,
             "user_id": payload.get("user_id"),
             "amount": payload.get("amount"),
             "currency": payload.get("currency", "BTC"),
             "created_at": time.time()
+    
         })
 
     # mock queue processing time (non-blocking)
