@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: wallet-config
+  namespace: wallet
+data:
+  QUEUE_BACKEND: "redis"
+  REDIS_QUEUE_KEY: "wallet:withdraw:queue:dev"
