@@ -1,1 +1,15 @@
-
+# svc-wallet/k8s/base/service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: wallet
+  labels:
+    app: wallet
+spec:
+  type: ClusterIP
+  selector:
+    app: wallet
+  ports:
+    - name: http
+      port: 80
+      targetPort: 8081
