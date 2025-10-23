@@ -1,0 +1,21 @@
+[project]
+name = "svc-wallet"
+version = "0.1.0"
+description = "Wallet service: consume trades.out → idempotent balance/ledger update → wallet.tx"
+requires-python = ">=3.11"
+authors = [{ name = "Sophie", email = "sophie@example.com" }]
+
+dependencies = [
+  "fastapi==0.115.0",
+  "uvicorn[standard]==0.30.6",
+  "aiokafka==0.10.0",
+  "asyncpg==0.29.0",
+  "prometheus-client==0.20.0",
+  "opentelemetry-sdk==1.26.0",
+  "opentelemetry-instrumentation-fastapi==0.47b0",
+  "opentelemetry-exporter-otlp==1.26.0",
+  "python-dotenv==1.0.1",
+]
+
+[tool.uvicorn]
+factory = false
