@@ -2,20 +2,10 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: wallet-config
-  namespace: wallet
 data:
-  # 큐 백엔드: memory | redis | kafka
-  QUEUE_BACKEND: "memory"
-  # 모의 큐 대기 시간(초)
-  MOCK_QUEUE_TIME_S: "0.5"
-
-  # Redis 설정(선택)
-  REDIS_HOST: "redis.wallet.svc.cluster.local"
-  REDIS_PORT: "6379"
-  REDIS_QUEUE_KEY: "wallet:withdraw:queue"
-
-  # Kafka 설정(선택)
-  KAFKA_BOOTSTRAP: "kafka.data-platform.svc.cluster.local:9092"
-  KAFKA_TOPIC: "wallet-withdraw"
-  KAFKA_SASL_MECHANISMS: "PLAIN"
-  KAFKA_SECURITY_PROTOCOL: "SASL_PLAINTEXT"
+  APP_ENV: "dev"            
+  BATCH_SIZE: "500"
+  BATCH_WINDOW_MS: "50"
+  TRADES_OUT_TOPIC: "trades.out"
+  WALLET_TX_TOPIC: "wallet.tx"
+  KAFKA_GROUP_ID: "wallet-consumer"
