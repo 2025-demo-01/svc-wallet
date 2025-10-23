@@ -26,6 +26,12 @@ async def run_consumer():
         while True:
             try:
                 msg = await consumer.getone()
+                trace_id = None
+                for h in getattr(msg, "headers", []) or []:
+                    if h[0] == "trace-id":
+                        trace_id = h[1].decode("utf-8")
+                # 필요하면 Prometheus label이나 로그에 포함
+                # logger.info("applied trade", extra={"trace_id": trace_id, "trade_id": tr["trade_id"]})  
             except Exception as e:
                 KAFKA_ERRORS_TOTAL.inc()
                 await asyncio.sleep(0.1)
