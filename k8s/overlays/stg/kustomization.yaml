@@ -1,16 +1,17 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
-namespace: wallet
+namespace: trading
+nameSuffix: -stg
+commonLabels: { env: stg }
+
 resources:
-  - ../../base/deployment.yaml
-  - ../../base/service.yaml
-  - ../../base/networkpolicy.yaml
-  - ../../base/secret.enc.yaml
-  - ../../base/configmap.yaml
-commonLabels:
-  env: stg
+  - ../../base
+
 images:
-  - name: registry.upx.exchange/exchange/wallet
-    newTag: v0.7.1
+  - name: ghcr.io/2025-demo-01/svc-wallet
+    newTag: 0.1.0-stg
+
 patchesStrategicMerge:
-  - configmap-patch.yaml
+  - configmap-patch.yaml          # APP_ENV/stg
+  - externalsecret-patch.yaml     # (선택) stg 경로로 override
+  # - hpa.yaml                    # (필요시) 환경별로만 넣기
