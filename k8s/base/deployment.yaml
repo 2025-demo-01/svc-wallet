@@ -1,99 +1,42 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: wallet-service
-  namespace: wallet
-  labels:
-    app: wallet
-    service: wallet
+  name: svc-wallet
+  annotations:
+    argocd.argoproj.io/sync-wave: "50"   # mesh10→policy20→trading-api30→matching40→wallet50
 spec:
   replicas: 2
-  selector:
-    matchLabels:
-      app: wallet
-  strategy:
-    type: RollingUpdate
-    rollingUpdate:
-      maxUnavailable: 0
-      maxSurge: 1
+  selector: { matchLabels: { app: svc-wallet } }
   template:
     metadata:
-      labels:
-        app: wallet
-        service: wallet
-        env: prod
-        owner: wallet
+      labels: { app: svc-wallet }
       annotations:
         prometheus.io/scrape: "true"
-        prometheus.io/port: "8081"
-        prometheus.io/path: /metrics
+        prometheus.io/port: "8080"
+        prometheus.io/path: "/metrics"
     spec:
+      serviceAccountName: svc-wallet
       containers:
-        - name: wallet
-          image: registry.upx.exchange/exchange/wallet:v0.7.1
-          imagePullPolicy: IfNotPresent
-          ports:
-            - name: http
-              containerPort: 8081
+        - name: app
+          image: ghcr.io/2025-demo-01/svc-wallet:0.1.0
+          ports: [{ name: http, containerPort: 8080 }]
           env:
-            - name: PORT
-              value: "8081"
-            - name: HSM_ENDPOINT
-              value: "http://hsm-mock.wallet.svc.cluster.local:9000"
-            - name: HOT_WALLET_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: wallet-secret
-                  key: HOT_WALLET_PASSWORD
-            - name: HSM_API_KEY
-              valueFrom:
-                secretKeyRef:
-                  name: wallet-secret
-                  key: HSM_API_KEY
-            - name: DB_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: wallet-secret
-                  key: DB_PASSWORD
-            - name: KAFKA_SASL_USERNAME
-              valueFrom:
-                secretKeyRef:
-                  name: wallet-secret
-                  key: HSM_API_KEY
-            - name: KAFKA_SASL_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: wallet-secret
-                  key: HOT_WALLET_PASSWORD
-          envFrom:
-            - configMapRef:
-                name: wallet-config
+            - { name: APP_ENV, valueFrom: { configMapKeyRef: { name: wallet-config, key: APP_ENV } } }
+            - { name: BATCH_SIZE, valueFrom: { configMapKeyRef: { name: wallet-config, key: BATCH_SIZE } } }
+            - { name: BATCH_WINDOW_MS, valueFrom: { configMapKeyRef: { name: wallet-config, key: BATCH_WINDOW_MS } } }
+            - { name: TRADES_OUT_TOPIC, valueFrom: { configMapKeyRef: { name: wallet-config, key: TRADES_OUT_TOPIC } } }
+            - { name: WALLET_TX_TOPIC, valueFrom: { configMapKeyRef: { name: wallet-config, key: WALLET_TX_TOPIC } } }
+            - { name: KAFKA_GROUP_ID, valueFrom: { configMapKeyRef: { name: wallet-config, key: KAFKA_GROUP_ID } } }
+            - { name: PG_DSN, valueFrom: { secretKeyRef: { name: wallet-secret, key: PG_DSN } } }
+            - { name: KAFKA_BROKERS, valueFrom: { secretKeyRef: { name: wallet-secret, key: KAFKA_BROKERS } } }
+          readinessProbe: { httpGet: { path: /readyz, port: 8080 }, initialDelaySeconds: 5, periodSeconds: 5 }
+          livenessProbe:  { httpGet: { path: /healthz, port: 8080 }, initialDelaySeconds: 10, periodSeconds: 10 }
           resources:
-            requests:
-              cpu: "500m"
-              memory: "512Mi"
-            limits:
-              cpu: "1"
-              memory: "1Gi"
+            requests: { cpu: "200m", memory: "256Mi" }
+            limits:   { cpu: "1",    memory: "512Mi" }
           securityContext:
             runAsNonRoot: true
-            allowPrivilegeEscalation: false
             readOnlyRootFilesystem: true
-          readinessProbe:
-            httpGet:
-              path: /healthz
-              port: 8081
-            initialDelaySeconds: 3
-            periodSeconds: 5
-            timeoutSeconds: 2
-            failureThreshold: 6
-          livenessProbe:
-            httpGet:
-              path: /healthz
-              port: 8081
-            initialDelaySeconds: 10
-            periodSeconds: 10
-            timeoutSeconds: 2
-            failureThreshold: 3
-      imagePullSecrets:
-        - name: registry-credentials
+            allowPrivilegeEscalation: false
+            seccompProfile: { type: RuntimeDefault }
+            capabilities: { drop: ["ALL"] }
