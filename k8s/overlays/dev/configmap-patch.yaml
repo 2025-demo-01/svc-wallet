@@ -1,8 +1,10 @@
-apiVersion: v1
-kind: ConfigMap
+apiVersion: external-secrets.io/v1beta1
+kind: ExternalSecret
 metadata:
-  name: wallet-config
-  namespace: wallet
-data:
-  QUEUE_BACKEND: "redis"
-  REDIS_QUEUE_KEY: "wallet:withdraw:queue:dev"
+  name: wallet-secret
+spec:
+  data:
+    - secretKey: PG_DSN
+      remoteRef: { key: /exchange/dev/wallet/pg_dsn }
+    - secretKey: KAFKA_BROKERS
+      remoteRef: { key: /exchange/dev/kafka/brokers }
