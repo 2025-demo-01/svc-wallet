@@ -1,0 +1,19 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: wallet-slo
+  labels: { release: kube-prometheus-stack }
+spec:
+  groups:
+    - name: wallet.slo
+      rules:
+        - alert: WalletBatchP95LatencyHigh
+          expr: histogram_quantile(0.95, sum by (le) (rate(wallet_batch_latency_ms_bucket[5m]))) > 120
+          for: 10m
+          labels: { severity: page }
+          annotations: { summary: "Wallet batch p95 > 120ms (10m)" }
+        - alert: WalletDBErrors
+          expr: increase(wallet_db_errors_total[10m]) > 0
+          for: 0m
+          labels: { severity: ticket }
+          annotations: { summary: "Wallet DB errors detected" }
